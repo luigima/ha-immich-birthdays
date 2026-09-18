@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Mit Immich verbinden",
+        "description": "Gib deine Immich-Server-URL und deinen API-Schlüssel ein.",
+        "data": {
+          "host": "Immich Server-URL",
+          "api_key": "API-Schlüssel",
+          "ssl_verify": "SSL-Zertifikat prüfen"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu Immich fehlgeschlagen. Bitte URL und Netzwerk prüfen.",
+      "invalid_auth": "Ungültiger API-Schlüssel.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
+    },
+    "abort": {
+      "already_configured": "Dieser Immich-Server ist bereits eingerichtet."
+    }
+  }
+}

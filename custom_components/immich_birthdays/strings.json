@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Immich",
+        "description": "Enter your Immich server details and API key.",
+        "data": {
+          "host": "Immich Server URL",
+          "api_key": "API Key",
+          "ssl_verify": "Verify SSL Certificate"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Immich. Please check the URL and network.",
+      "invalid_auth": "Invalid API key.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "This Immich server is already configured."
+    }
+  }
+}

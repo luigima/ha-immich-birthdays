@@ -1,0 +1,11 @@
+{
+  "domain": "immich_birthdays",
+  "name": "Immich Birthdays",
+  "codeowners": ["@luigima"],
+  "config_flow": true,
+  "documentation": "https://github.com/luigima/ha-immich-birthdays",
+  "iot_class": "local_polling",
+  "version": "1.0.0",
+  "dependencies": ["http"],
+  "requirements": []
+}
