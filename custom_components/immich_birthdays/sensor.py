@@ -44,7 +44,24 @@ async def async_setup_entry(
     for person in coordinator.data:
         entities.append(ImmichPersonBirthdaySensor(coordinator, entry, person.id))
 
+    # Add dynamic upcoming birthday sensors (ranks 1 to 10)
+    for rank in range(1, 11):
+        entities.append(ImmichUpcomingBirthdaySensor(coordinator, entry, rank))
+
     async_add_entities(entities)
+
+    known_person_ids = {person.id for person in coordinator.data}
+
+    def _async_check_new_people() -> None:
+        new_entities: list[SensorEntity] = []
+        for person in coordinator.data:
+            if person.id not in known_person_ids:
+                known_person_ids.add(person.id)
+                new_entities.append(ImmichPersonBirthdaySensor(coordinator, entry, person.id))
+        if new_entities:
+            async_add_entities(new_entities)
+
+    entry.async_on_unload(coordinator.async_add_listener(_async_check_new_people))
 
 
 class ImmichPersonBirthdaySensor(CoordinatorEntity[ImmichBirthdaysCoordinator], SensorEntity):
@@ -179,4 +196,84 @@ class ImmichNextBirthdaysSensor(CoordinatorEntity[ImmichBirthdaysCoordinator], S
             ATTR_TODAY_BIRTHDAYS: today,
             ATTR_UPCOMING_BIRTHDAYS: upcoming,
             "total_birthdays": len(upcoming),
+        }
+
+
+class ImmichUpcomingBirthdaySensor(CoordinatorEntity[ImmichBirthdaysCoordinator], SensorEntity):
+    """Sensor for an upcoming birthday slot by chronological rank (e.g. 1st next, 2nd next)."""
+
+    _attr_has_entity_name = False
+
+    def __init__(
+        self,
+        coordinator: ImmichBirthdaysCoordinator,
+        entry: ConfigEntry,
+        rank: int,
+    ) -> None:
+        """Initialize the upcoming birthday sensor."""
+        super().__init__(coordinator)
+        self.rank = rank
+        self._entry_id = entry.entry_id
+        self._attr_unique_id = f"{entry.entry_id}_upcoming_{rank}"
+        self.entity_id = f"sensor.upcoming_birthday_{rank}"
+
+    @property
+    def _person(self) -> ImmichPerson | None:
+        """Get person corresponding to this rank."""
+        if self.coordinator.data and len(self.coordinator.data) >= self.rank:
+            return self.coordinator.data[self.rank - 1]
+        return None
+
+    @property
+    def name(self) -> str:
+        """Return the person name as the friendly name, or fallback if none."""
+        person = self._person
+        return person.name if person else f"Upcoming Birthday {self.rank}"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return state of sensor (e.g. 'Today', 'in 1 day', 'in X days')."""
+        person = self._person
+        if not person:
+            return "None"
+
+        if person.is_today:
+            return "Today"
+        if person.days_until == 1:
+            return "in 1 day"
+        return f"in {person.days_until} days"
+
+    @property
+    def entity_picture(self) -> str | None:
+        """Return the person's face thumbnail URL as the entity picture."""
+        person = self._person
+        return person.thumbnail_url if person else None
+
+    @property
+    def icon(self) -> str:
+        """Return icon depending on whether it is today."""
+        person = self._person
+        if person and person.is_today:
+            return "mdi:party-popper"
+        return "mdi:cake-variant"
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return detailed birthday attributes."""
+        person = self._person
+        if not person:
+            return {"rank": self.rank}
+
+        return {
+            "rank": self.rank,
+            ATTR_PERSON_ID: person.id,
+            "name": person.name,
+            ATTR_BIRTH_DATE: str(person.birth_date),
+            ATTR_NEXT_BIRTHDAY: str(person.next_birthday),
+            ATTR_DAYS_UNTIL: person.days_until,
+            ATTR_AGE: person.current_age,
+            ATTR_NEXT_AGE: person.turning_age,
+            ATTR_IS_TODAY: person.is_today,
+            ATTR_IS_FAVORITE: person.is_favorite,
+            "entity_picture": person.thumbnail_url,
         }

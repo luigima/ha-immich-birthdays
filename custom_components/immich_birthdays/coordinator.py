@@ -86,21 +86,37 @@ class ImmichBirthdaysCoordinator(DataUpdateCoordinator[list[ImmichPerson]]):
         }
 
         url = f"{self.host}/api/people"
+        people_raw: list[dict[str, Any]] = []
+        page = 1
+
         try:
-            async with session.get(url, headers=headers, timeout=15) as resp:
-                if resp.status != 200:
-                    raise UpdateFailed(f"Immich API returned status {resp.status}")
-                data = await resp.json()
+            while True:
+                params = {"page": str(page), "withHidden": "true"}
+                async with session.get(url, headers=headers, params=params, timeout=15) as resp:
+                    if resp.status != 200:
+                        raise UpdateFailed(f"Immich API returned status {resp.status}")
+                    data = await resp.json()
+
+                batch = data.get("people", [])
+                people_raw.extend(batch)
+
+                if not data.get("hasNextPage") or not batch:
+                    break
+                page += 1
         except Exception as err:
             raise UpdateFailed(f"Error communicating with Immich: {err}") from err
 
-        people_raw = data.get("people", [])
         today = dt_util.now().date()
         result: list[ImmichPerson] = []
+        seen_ids: set[str] = set()
 
         for p in people_raw:
+            if p["id"] in seen_ids:
+                continue
+            seen_ids.add(p["id"])
+
             birth_date_str = p.get("birthDate")
-            if not birth_date_str or p.get("isHidden"):
+            if not birth_date_str:
                 continue
 
             try:
