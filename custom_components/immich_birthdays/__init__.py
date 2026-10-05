@@ -22,9 +22,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Immich Birthdays from a config entry."""
     hass.data.setdefault(DOMAIN, {})
 
-    host = entry.data[CONF_HOST]
-    api_key = entry.data[CONF_API_KEY]
-    ssl_verify = entry.data.get(CONF_SSL_VERIFY, True)
+    host = entry.options.get(CONF_HOST, entry.data.get(CONF_HOST))
+    api_key = entry.options.get(CONF_API_KEY, entry.data.get(CONF_API_KEY))
+    ssl_verify = entry.options.get(CONF_SSL_VERIFY, entry.data.get(CONF_SSL_VERIFY, True))
 
     coordinator = ImmichBirthdaysCoordinator(
         hass=hass,
@@ -44,6 +44,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.http.register_view(ImmichThumbnailView(hass))
         hass.data[DOMAIN][VIEW_REGISTERED_KEY] = True
 
+    # Register update listener to reload when options are changed
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
@@ -55,3 +58,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.data[DOMAIN].pop(entry.entry_id, None)
 
     return unload_ok
+
+
+async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
+    """Reload config entry when options are updated."""
+    await hass.config_entries.async_reload(entry.entry_id)

@@ -9,6 +9,15 @@
           "api_key": "API-Schlüssel",
           "ssl_verify": "SSL-Zertifikat prüfen"
         }
+      },
+      "reconfigure": {
+        "title": "Immich neu konfigurieren",
+        "description": "Aktualisiere deine Immich-Server-URL und deinen API-Schlüssel.",
+        "data": {
+          "host": "Immich Server-URL",
+          "api_key": "API-Schlüssel",
+          "ssl_verify": "SSL-Zertifikat prüfen"
+        }
       }
     },
     "error": {
@@ -17,7 +26,26 @@
       "unknown": "Ein unerwarteter Fehler ist aufgetreten."
     },
     "abort": {
-      "already_configured": "Dieser Immich-Server ist bereits eingerichtet."
+      "already_configured": "Dieser Immich-Server ist bereits eingerichtet.",
+      "reconfigure_successful": "Neukonfiguration war erfolgreich."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Immich Geburtstage Optionen",
+        "description": "Aktualisiere deine Immich-Verbindungseinstellungen.",
+        "data": {
+          "host": "Immich Server-URL",
+          "api_key": "API-Schlüssel",
+          "ssl_verify": "SSL-Zertifikat prüfen"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zu Immich fehlgeschlagen. Bitte URL und Netzwerk prüfen.",
+      "invalid_auth": "Ungültiger API-Schlüssel.",
+      "unknown": "Ein unerwarteter Fehler ist aufgetreten."
     }
   }
 }

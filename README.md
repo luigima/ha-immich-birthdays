@@ -56,9 +56,14 @@ A lightweight Home Assistant custom integration that retrieves birthdays and fac
 1. In Home Assistant, navigate to **Settings** → **Devices & Services** → **Add Integration**.
 2. Search for **Immich Birthdays**.
 3. Fill in your connection details:
-   - **Immich Server URL**: e.g., `http://192.168.1.100:2283` or `https://your-immich.example.com`
+   - **Immich Server URL**: e.g., `https://your-immich.example.com` or `http://192.168.1.100:2283`
    - **API Key**: Generated in Immich (*Account Settings → API Keys*)
 4. Click **Submit**. All people with birthdays will automatically populate as entities!
+
+### 🔧 Options & Reconfigure
+You can update your Immich server URL, API key, and SSL settings at any time:
+- Click **Configure** on the integration card to adjust your options.
+- Or use Home Assistant's native **Reconfigure** flow if your server URL changes or connection fails.
 
 ---
 
