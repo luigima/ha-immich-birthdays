@@ -8,12 +8,14 @@ A lightweight Home Assistant custom integration that retrieves birthdays and fac
 
 - **Automated Sync**: Automatically syncs recognized people with `birthDate` set in Immich.
 - **Face Avatars**: Exposes each person's cropped face thumbnail as `entity_picture` (via an authenticated local proxy view), without exposing your Immich API key to browser clients.
+- **Dynamic Rank Sensors** (`sensor.upcoming_birthday_1` to `sensor.upcoming_birthday_10`):
+  - Chronological slots that automatically represent whoever has the 1st, 2nd, 3rd... upcoming birthday.
+  - Dynamically updates name, avatar, age, and countdown — **no need to explicitly list or hardcode individual people** in your dashboards!
+- **Aggregate Sensor** (`sensor.next_birthdays`):
+  - Returns a sorted list of all upcoming birthdays and who is celebrating today in sensor attributes.
 - **Dedicated Sensor per Person**:
-  - State: `Today`, `in 1 day`, `in 5 days`, etc.
-  - Attributes: `age`, `next_age`, `birth_date`, `next_birthday`, `days_until`, `is_today`, `is_favorite`.
-- **Aggregate Sensor** (`sensor.immich_next_birthdays`):
-  - Returns a sorted list of all upcoming birthdays and who is celebrating today.
-- **Calendar Entity** (`calendar.immich_birthdays`):
+  - Individual sensors for each person (`sensor.<name>_birthday`) if you prefer pinning specific individuals.
+- **Calendar Entity** (`calendar.birthdays`):
   - Full-day annual recurring events with turning age in the summary.
 - **Bubble Card Friendly**: Designed specifically to look stunning on [Bubble Card](https://github.com/Clooos/Bubble-Card) buttons with conditional highlights for birthdays happening today!
 
@@ -69,16 +71,17 @@ You can update your Immich server URL, API key, and SSL settings at any time:
 
 ## 🎴 Bubble Card Examples
 
-### Next Birthday Button with Avatar & Today's Highlight
+### Next Upcoming Birthday Button (Dynamic Rank 1)
 
-Display an individual person's birthday using a Bubble Card button. When it's their birthday today, the card pulses with a celebratory golden border:
+Display whoever has the next upcoming birthday dynamically. When it's their birthday today, the card pulses with a celebratory golden border:
 
 ```yaml
 type: custom:bubble-card
 card_type: button
-entity: sensor.immich_birthday_jane_doe
+entity: sensor.upcoming_birthday_1
 button_type: state
 show_state: true
+show_name: true
 show_attribute: false
 styles: |
   ${state === 'Today' ? `
@@ -93,17 +96,49 @@ styles: |
   ` : ''}
 ```
 
-### Horizontal Stack of Upcoming Birthdays
+### Horizontal Stack of Next Upcoming Birthdays
+
+With dynamic rank sensors, you never have to hardcode entity names or reconfigure dashboard cards when birthdays pass:
 
 ```yaml
 type: horizontal-stack
 cards:
   - type: custom:bubble-card
     card_type: button
-    entity: sensor.immich_birthday_jane_doe
+    entity: sensor.upcoming_birthday_1
     button_type: state
+    show_state: true
+    show_name: true
   - type: custom:bubble-card
     card_type: button
-    entity: sensor.immich_birthday_john_doe
+    entity: sensor.upcoming_birthday_2
     button_type: state
+    show_state: true
+    show_name: true
+  - type: custom:bubble-card
+    card_type: button
+    entity: sensor.upcoming_birthday_3
+    button_type: state
+    show_state: true
+    show_name: true
+```
+
+### Dynamic List with Auto-Entities (Optional)
+
+If you use `auto-entities`, you can automatically list all individual birthdays sorted chronologically:
+
+```yaml
+type: custom:auto-entities
+card:
+  type: entities
+  title: 🎂 All Upcoming Birthdays
+filter:
+  include:
+    - entity_id: "sensor.*_birthday"
+  exclude:
+    - entity_id: "sensor.upcoming_birthday_*"
+sort:
+  method: attribute
+  attribute: days_until
+  numeric: true
 ```
